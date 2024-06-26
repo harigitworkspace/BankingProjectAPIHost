@@ -1,6 +1,7 @@
 package com.bank.service;
 
 import com.bank.binding.Passbook;
+import com.bank.exception.AccountNotFoundException;
 import com.bank.repo.PassbookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,9 +20,12 @@ public class PassbookServiceImpl implements PassbookService {
         Passbook passbook = new Passbook(accountId, transactionDate, transactionType, amount, balanceAfterTransaction);
         passbookRepository.save(passbook);
     }
-
-    @Override
     public List<Passbook> getPassbookEntries(Long accountId) {
-        return passbookRepository.findByAccountId(accountId);
+        List<Passbook> passbookEntries = passbookRepository.findByAccountId(accountId);
+        if (passbookEntries.isEmpty()) {
+            throw new AccountNotFoundException("Passbook entries not found for Account ID " + accountId);
+        }
+        return passbookEntries;
     }
+
 }

@@ -59,6 +59,8 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setAmount(amount);
         transaction.setTransactionDate(new Date());
         transaction.setTransactionType("WITHDRAWAL");
+        passbookService.recordTransaction(accountId, transaction.getTransactionDate(), transaction.getTransactionType(), -transaction.getAmount(), account.getBalance());
+
         return transactionRepository.save(transaction);
     }
 
@@ -83,6 +85,10 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setAmount(amount);
         transaction.setTransactionDate(new Date());
         transaction.setTransactionType("TRANSFER");
+     // Record transaction in passbook for both accounts involved in transfer
+        passbookService.recordTransaction(fromAccountId, transaction.getTransactionDate(), transaction.getTransactionType(), -transaction.getAmount(), fromAccount.getBalance());
+        passbookService.recordTransaction(toAccountId, transaction.getTransactionDate(), "TRANSFER", transaction.getAmount(), toAccount.getBalance());
+
         return transactionRepository.save(transaction);
     }
 
