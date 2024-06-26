@@ -8,8 +8,11 @@ import com.bank.repo.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {
@@ -96,6 +99,44 @@ public class TransactionServiceImpl implements TransactionService {
     public List<Transaction> getTransactionsByAccountId(Long accountId) {
         return transactionRepository.findByAccountId(accountId);
     }
+    
+//    @Override
+//    public Map<Long, List<Transaction>> summarizeTransactionsByAccount() {
+//        List<Transaction> allTransactions = transactionRepository.findAll();
+//        return allTransactions.stream()
+//                .collect(Collectors.groupingBy(Transaction::getAccountId));
+//    }
+    
+    @Override
+    public List<Map<String, Object>> summarizeTransactionsByAccount() {
+        List<Transaction> allTransactions = transactionRepository.findAll();
+        Map<Long, List<Transaction>> transactionsByAccountId = allTransactions.stream()
+                .collect(Collectors.groupingBy(Transaction::getAccountId));
+
+        List<Map<String, Object>> accountSummaries = new ArrayList<>();
+
+        for (Map.Entry<Long, List<Transaction>> entry : transactionsByAccountId.entrySet()) {
+            Long accountId = entry.getKey();
+            List<Transaction> transactions = entry.getValue();
+
+            Account account = accountService.getAccountById(accountId);
+            if (account != null) {
+                // Create a map to represent the account summary
+                Map<String, Object> summary = Map.of(
+                        "accountId", account.getId(),
+                        "accountName", account.getAccountName(),
+                        "accountNumber", account.getAccountNumber(),
+                        "accountType", account.getAccountType(),
+                        "balance", account.getBalance(),
+                        "transactions", transactions
+                );
+                accountSummaries.add(summary);
+            }
+        }
+
+        return accountSummaries;
+    }
+
 
     private String generateTransactionId() {
         // Logic to generate a unique transaction ID
