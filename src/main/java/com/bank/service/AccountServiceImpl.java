@@ -1,6 +1,7 @@
 package com.bank.service;
 
 import com.bank.binding.Account;
+import com.bank.exception.AccountNotFoundException;
 import com.bank.repo.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -70,10 +71,16 @@ public class AccountServiceImpl implements AccountService {
         return null;
     }
 
+//    @Override
+//    public Double getBalance(Long id) {
+//        Optional<Account> accountOpt = accountRepository.findById(id);
+//        return accountOpt.map(Account::getBalance).orElse(null);
+//    }
     @Override
     public Double getBalance(Long id) {
         Optional<Account> accountOpt = accountRepository.findById(id);
-        return accountOpt.map(Account::getBalance).orElse(null);
+        Account account = accountOpt.orElseThrow(() -> new AccountNotFoundException("Account with ID " + id + " not found"));
+        return account.getBalance();
     }
 
     @Override
